@@ -1,5 +1,5 @@
 "use client";
-import { GetPostResult } from "@/lib/wisp";
+import type { GetPostResult } from "@/lib/notion";
 import Image from "next/image";
 import Link from "next/link";
 import ReactMarkdown from "react-markdown";

@@ -1,6 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
-import { GetPostsResult } from "@/lib/wisp";
+import type { GetPostsResult } from "@/lib/notion";
 import { formatDate } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";

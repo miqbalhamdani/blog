@@ -1,7 +1,6 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { wisp } from "@/lib/wisp";
 import { CommentForm } from "./CommentForm";
 import { CommentList } from "./CommentList";
 
@@ -12,7 +11,21 @@ interface CommentSectionProps {
 export function CommentSection({ slug }: CommentSectionProps) {
   const { data, isLoading } = useQuery({
     queryKey: ["comments", slug],
-    queryFn: () => wisp.getComments({ slug, page: 1, limit: "all" }),
+    queryFn: async () => ({
+      comments: [],
+      pagination: {
+        page: 1,
+        limit: "all" as const,
+        totalPages: 1,
+        totalComments: 0,
+      },
+      config: {
+        enabled: false,
+        allowUrls: false,
+        allowNested: false,
+        signUpMessage: null,
+      },
+    }),
   });
 
   if (isLoading) {

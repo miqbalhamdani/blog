@@ -1,19 +1,18 @@
 import type { MetadataRoute } from "next";
-import urlJoin from "url-join";
 import { config } from "@/config";
-import { wisp } from "@/lib/wisp";
+import { getNotionTags } from "@/lib/notion";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const result = await wisp.getTags();
+  const result = await getNotionTags();
   return [
     {
-      url: urlJoin(config.baseUrl, "tag"),
+      url: new URL("/tag", config.baseUrl).toString(),
       lastModified: new Date(),
       priority: 0.8,
     },
     ...result.tags.map((tag) => {
       return {
-        url: urlJoin(config.baseUrl, "tag", tag.name),
+        url: new URL(`/tag/${encodeURIComponent(tag.name)}`, config.baseUrl).toString(),
         lastModified: new Date(),
         priority: 0.8,
       };

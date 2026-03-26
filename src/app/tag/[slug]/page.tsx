@@ -3,7 +3,7 @@ import { BlogPostsPagination } from "@/components/BlogPostsPagination";
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { Badge } from "@/components/ui/badge";
-import { wisp } from "@/lib/wisp";
+import { getNotionPostsByTag } from "@/lib/notion";
 import { CircleX } from "lucide-react";
 import Link from "next/link";
 
@@ -42,7 +42,7 @@ const Page = async (
   } = params;
 
   const page = searchParams.page ? parseInt(searchParams.page as string) : 1;
-  const result = await wisp.getPosts({ limit: 6, tags: [slug], page });
+  const result = await getNotionPostsByTag({ tag: slug, limit: 6, page });
   return (
     <div className="container mx-auto px-5 mb-10">
       <Header />

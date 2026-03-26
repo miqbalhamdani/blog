@@ -16,11 +16,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { AxiosError } from "axios";
 import { Shield } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { wisp } from "@/lib/wisp";
 
 const formSchema = z.object({
   author: z.string().min(1, "Name is required"),
@@ -44,12 +42,6 @@ interface CommentFormProps {
   onSuccess?: () => void;
 }
 
-interface ErrorResponse {
-  error: {
-    message: string;
-  };
-}
-
 interface CreateCommentRequest {
   slug: string;
   author: string;
@@ -63,19 +55,7 @@ interface CreateCommentRequest {
 export function CommentForm({ slug, config, onSuccess }: CommentFormProps) {
   const { toast } = useToast();
   const { mutateAsync: createComment, data } = useMutation({
-    mutationFn: async (input: CreateCommentRequest) => {
-      try {
-        return await wisp.createComment(input);
-      } catch (e) {
-        if (e instanceof AxiosError) {
-          const errorData = e.response?.data as ErrorResponse | undefined;
-          if (errorData?.error?.message) {
-            throw new Error(errorData.error.message);
-          }
-        }
-        throw e;
-      }
-    },
+    mutationFn: async (_input: CreateCommentRequest) => ({ success: false }),
   });
 
   const form = useForm<z.infer<typeof formSchema>>({

@@ -2,20 +2,19 @@ export const revalidate = 3600; // 1 hour
 
 import { NextResponse } from "next/server";
 import RSS from "rss";
-import urlJoin from "url-join";
-import { wisp } from "../../lib/wisp";
+import { getNotionPosts } from "@/lib/notion";
 import { config } from "@/config";
 
 const baseUrl = config.baseUrl;
 
 export async function GET() {
-  const result = await wisp.getPosts({ limit: 20 });
+  const result = await getNotionPosts({ limit: 20 });
 
   const posts = result.posts.map((post) => {
     return {
       title: post.title,
       description: post.description || "",
-      url: urlJoin(baseUrl, `/blog/${post.slug}`),
+      url: new URL(`/blog/${post.slug}`, baseUrl).toString(),
       date: post.publishedAt || new Date(),
     };
   });
@@ -24,7 +23,7 @@ export async function GET() {
     title: config.blog.name,
     description: config.blog.metadata.description,
     site_url: baseUrl,
-    feed_url: urlJoin(baseUrl, "/rss"),
+    feed_url: new URL("/rss", baseUrl).toString(),
     pubDate: new Date(),
   });
   posts.forEach((post) => {

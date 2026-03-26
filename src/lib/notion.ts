@@ -1,7 +1,64 @@
 import { config } from "@/config";
 import { Client, isFullPage } from "@notionhq/client";
 import type { PageObjectResponse } from "@notionhq/client/build/src/api-endpoints";
-import type { GetPostResult, GetPostsResult, GetRelatedPostsResult } from "@wisp-cms/client";
+
+export interface PostTag {
+  id: string;
+  name: string;
+}
+
+export interface PostAuthor {
+  name: string | null;
+  image: string | null;
+}
+
+export interface Post {
+  id: string;
+  createdAt: Date;
+  teamId: string;
+  description: string | null;
+  title: string;
+  slug: string;
+  image: string | null;
+  authorId: string;
+  updatedAt: Date;
+  publishedAt: Date | null;
+  author: PostAuthor;
+  tags: PostTag[];
+}
+
+export interface PostWithContent extends Post {
+  content: string;
+  metadata: unknown;
+}
+
+export interface GetPostsResult {
+  posts: Post[];
+  pagination: {
+    page: number;
+    limit: number | "all";
+    totalPages: number;
+    totalPosts: number;
+    nextPage: number | null;
+    prevPage: number | null;
+  };
+}
+
+export interface GetPostResult {
+  post: PostWithContent | null;
+}
+
+export interface RelatedPost extends Post {
+  distance: number;
+}
+
+export interface GetRelatedPostsResult {
+  posts: RelatedPost[];
+}
+
+export interface GetTagsResult {
+  tags: PostTag[];
+}
 
 const notion = new Client({
   auth: config.notion.token,
@@ -219,4 +276,71 @@ export const getNotionRelatedPosts = async (
     .map((p) => ({ ...p, distance: 0 }));
 
   return { posts: related };
+};
+
+export const getNotionPostsByTag = async ({
+  tag,
+  limit = 6,
+  page = 1,
+}: {
+  tag: string;
+  limit?: number | "all";
+  page?: number;
+}): Promise<GetPostsResult> => {
+  const normalizedTag = tag.toLowerCase();
+  const taggedPosts = (await getAllPublishedPosts()).filter((post) =>
+    post.tags.some((postTag) => postTag.name.toLowerCase() === normalizedTag)
+  );
+
+  const safePage = Math.max(1, page);
+
+  if (limit === "all") {
+    return {
+      posts: taggedPosts,
+      pagination: {
+        page: 1,
+        limit,
+        totalPages: 1,
+        totalPosts: taggedPosts.length,
+        nextPage: null,
+        prevPage: null,
+      },
+    };
+  }
+
+  const totalPages = Math.max(1, Math.ceil(taggedPosts.length / limit));
+  const currentPage = Math.min(safePage, totalPages);
+  const startIndex = (currentPage - 1) * limit;
+
+  return {
+    posts: taggedPosts.slice(startIndex, startIndex + limit),
+    pagination: {
+      page: currentPage,
+      limit,
+      totalPages,
+      totalPosts: taggedPosts.length,
+      nextPage: currentPage < totalPages ? currentPage + 1 : null,
+      prevPage: currentPage > 1 ? currentPage - 1 : null,
+    },
+  };
+};
+
+export const getNotionTags = async (): Promise<GetTagsResult> => {
+  const allPosts = await getAllPublishedPosts();
+  const uniqueTags = new Map<string, PostTag>();
+
+  for (const post of allPosts) {
+    for (const tag of post.tags) {
+      const key = tag.name.toLowerCase();
+      if (!uniqueTags.has(key)) {
+        uniqueTags.set(key, tag);
+      }
+    }
+  }
+
+  return {
+    tags: [...uniqueTags.values()].sort((a, b) =>
+      a.name.localeCompare(b.name)
+    ),
+  };
 };
