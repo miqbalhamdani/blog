@@ -1,6 +1,4 @@
 const buildConfig = () => {
-  const blogId = process.env.NEXT_PUBLIC_BLOG_ID;
-  if (!blogId) throw new Error("NEXT_PUBLIC_BLOG_ID is missing");
   const name = process.env.NEXT_PUBLIC_BLOG_DISPLAY_NAME || "Travel.";
   const copyright = process.env.NEXT_PUBLIC_BLOG_COPYRIGHT || "Samantha";
   const defaultTitle =
@@ -24,8 +22,9 @@ const buildConfig = () => {
     ogImageSecret:
       process.env.OG_IMAGE_SECRET ||
       "secret_used_for_signing_and_verifying_the_og_image_url",
-    wisp: {
-      blogId,
+    notion: {
+      token: process.env.NOTION_TOKEN,
+      postsDataSourceId: process.env.NOTION_POSTS_DATA_SOURCE_ID,
     },
   };
 };

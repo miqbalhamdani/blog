@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { RelatedPosts } from "@/components/RelatedPosts";
 import { config } from "@/config";
 import { signOgImageUrl } from "@/lib/og-image";
-import { wisp } from "@/lib/wisp";
+import { getNotionPost, getNotionRelatedPosts } from "@/lib/notion";
 import { notFound } from "next/navigation";
 import type { BlogPosting, WithContext } from "schema-dts";
 
@@ -14,7 +14,7 @@ export async function generateMetadata(props: { params: Promise<Params> }) {
 
   const { slug } = params;
 
-  const result = await wisp.getPost(slug);
+  const result = await getNotionPost(slug);
   if (!result || !result.post) {
     return {
       title: "Blog post not found",
@@ -43,8 +43,8 @@ const Page = async (props: { params: Promise<Params> }) => {
 
   const { slug } = params;
 
-  const result = await wisp.getPost(slug);
-  const { posts } = await wisp.getRelatedPosts({ slug, limit: 3 });
+  const result = await getNotionPost(slug);
+  const { posts } = await getNotionRelatedPosts(slug, 3);
 
   if (!result || !result.post) {
     return notFound();
@@ -77,7 +77,7 @@ const Page = async (props: { params: Promise<Params> }) => {
         <div className="max-w-prose mx-auto text-xl">
           <BlogPostContent post={result.post} />
           <RelatedPosts posts={posts} />
-          <CommentSection slug={slug} />
+          {/* <CommentSection slug={slug} /> */}
         </div>
         <Footer />
       </div>

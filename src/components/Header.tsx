@@ -80,7 +80,7 @@ export const Header: FunctionComponent = () => {
           {config.blog.name}
         </h1>
       </Link>
-      <Navigation />
+      {/* <Navigation /> */}
     </section>
   );
 };
